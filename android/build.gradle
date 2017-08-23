@@ -2,7 +2,10 @@
 
 buildscript {
     ext {
+        kotlin_version = '1.1.4-2'
         appcompat_version = "26.0.1"
+        dropbox_version = "3.0.3"
+        anko_version = "0.10.0"
     }
     repositories {
         jcenter()
@@ -12,6 +15,7 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:2.3.3'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
 
@@ -26,6 +30,8 @@ allprojects {
 }
 
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
 
 android {
     compileSdkVersion 26
@@ -65,7 +71,7 @@ android {
 }
 
 dependencies {
-    compile 'com.dropbox.core:dropbox-core-sdk:3.0.3'
+    compile "com.dropbox.core:dropbox-core-sdk:$dropbox_version"
     compile "com.android.support:appcompat-v7:$appcompat_version"
     compile "com.android.support:design:$appcompat_version"
     compile "com.android.support:recyclerview-v7:$appcompat_version"
@@ -74,11 +80,8 @@ dependencies {
     compile 'com.squareup.picasso:picasso:2.5.2'
     compile 'com.squareup.okhttp:okhttp:2.7.5'
     compile 'com.squareup.okhttp3:okhttp:3.5.0'
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 }
-
-//dexcount {
-//    format = "list"
-//    includeClasses = true
-//    includeFieldCount = false
-//    orderByMethodCount = true
-//}
+repositories {
+    mavenCentral()
+}
