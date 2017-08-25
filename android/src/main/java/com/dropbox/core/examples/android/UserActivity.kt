@@ -1,5 +1,6 @@
 package com.dropbox.core.examples.android
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -15,7 +16,6 @@ import kotlinx.android.synthetic.main.app_bar.*
  * Activity that shows information about the currently logged in user
  */
 class UserActivity : BaseActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_user)

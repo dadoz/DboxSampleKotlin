@@ -9,6 +9,10 @@ import com.dropbox.core.v2.files.ListFolderResult;
 /**
  * Async task to list items in a folder
  */
+
+/**
+ * TODO move in a obs :)
+ */
 class ListFolderTask extends AsyncTask<String, Void, ListFolderResult> {
 
     private final DbxClientV2 mDbxClient;
