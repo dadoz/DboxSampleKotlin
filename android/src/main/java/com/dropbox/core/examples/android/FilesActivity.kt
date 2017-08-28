@@ -104,7 +104,12 @@ class FilesActivity : BaseActivity(), FilesAdapter.Callback, ListFolderTask.Call
      * load data
      */
     override fun loadData() {
-        ListFolderTask(DropboxClientFactory.getClient(), this).execute(mPath)
+        ListFolderObs(DropboxClientFactory.getClient())
+                .createByPath(mPath)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.newThread())
+                .subscribe ({result -> onDataLoaded(result)}, { error -> error(error as Exception)})
+//        ListFolderTask(DropboxClientFactory.getClient(), this).execute(mPath)
     }
 
     override fun onDataLoaded(result: ListFolderResult) {
@@ -116,8 +121,16 @@ class FilesActivity : BaseActivity(), FilesAdapter.Callback, ListFolderTask.Call
      * download file
      */
     private fun downloadFile() {
-        mSelectedFile?.let { Log.e(TAG, "No file selected to download."); return; }
-        DownloadFileTask(this@FilesActivity, DropboxClientFactory.getClient(), this).execute(mSelectedFile)
+        mSelectedFile?.let {
+            DownloadFileObs(this, DropboxClientFactory.getClient())
+                    .createFromParams(mSelectedFile)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeOn(Schedulers.newThread())
+                    .subscribe({ file -> onDownloadComplete(file) }, {error -> onError(error as Exception) })
+            return
+        }
+        Log.e(classLoader.toString(), "no selected file")
+//        DownloadFileTask(this@FilesActivity, DropboxClientFactory.getClient(), this).execute(mSelectedFile)
     }
     /**
      * upload file
@@ -127,7 +140,7 @@ class FilesActivity : BaseActivity(), FilesAdapter.Callback, ListFolderTask.Call
                 .createFromUrl(fileUri, mPath)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(Schedulers.newThread())
-                .subscribe { metadata -> Log.e(localClassName, metadata.name) }
+                .subscribe({ metadata -> onUploadComplete(metadata) }, { error -> onError(error as Exception) })
 //        UploadFileTask(this, DropboxClientFactory.getClient(), this).execute(fileUri)
     }
 
@@ -290,3 +303,4 @@ class FilesActivity : BaseActivity(), FilesAdapter.Callback, ListFolderTask.Call
         }
     }
 }
+
