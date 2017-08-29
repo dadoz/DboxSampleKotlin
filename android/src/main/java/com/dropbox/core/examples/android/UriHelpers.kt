@@ -34,9 +34,9 @@ object UriHelpers {
                 val split = docId.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
                 val type = split[0]
 
-//                if ("primary".equals(type, ignoreCase = true)) {
-                path = Environment.getExternalStorageDirectory().toString() + "/" + split[1]
-//                }
+                if ("primary".equals(type, ignoreCase = true)) {
+                    path = Environment.getExternalStorageDirectory().toString() + "/" + split[1]
+                }
             } else if (isDownloadsDocument(uri)) {
                 // DownloadsProvider
                 val id = DocumentsContract.getDocumentId(uri)
