@@ -49,12 +49,12 @@ class FilesActivity : BaseActivity(), FilesAdapter.Callback { //, ListFolderTask
     /**
      * on activity result
      */
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == PICKFILE_REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK) {
                 // This is the result of a call to launchFilePicker
-                uploadFile(data.data.toString())
+                uploadFile(data?.data.toString())
             }
         }
     }
