@@ -32,7 +32,7 @@ import java.text.DateFormat
  * Activity that displays the content of a path in dropbox and lets users navigate folders,
  * and upload/download files
  */
-class FilesActivity : BaseActivity(), FilesAdapter.Callback, ListFolderTask.Callback, DownloadFileTask.Callback, UploadFileTask.Callback {
+class FilesActivity : BaseActivity(), FilesAdapter.Callback { //, ListFolderTask.Callback, DownloadFileTask.Callback, UploadFileTask.Callback {
     private val mPath: String by lazy {
         intent.getStringExtra(EXTRA_PATH) ?: ""
     }
@@ -72,7 +72,7 @@ class FilesActivity : BaseActivity(), FilesAdapter.Callback, ListFolderTask.Call
 
         //set rv
         fileListRecyclerViewId.layoutManager = LinearLayoutManager(this)
-        fileListRecyclerViewId.adapter = FilesAdapter(PicassoClient.getPicasso(), this)
+        fileListRecyclerViewId.adapter = FilesAdapter(picassoClient, this)
     }
 
     override fun onFolderClicked(folder: FolderMetadata) {
@@ -104,15 +104,14 @@ class FilesActivity : BaseActivity(), FilesAdapter.Callback, ListFolderTask.Call
      * load data
      */
     override fun loadData() {
-        ListFolderObs(DropboxClientFactory.getClient())
+        ListFolderObs(dbxClient)
                 .createByPath(mPath)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(Schedulers.newThread())
                 .subscribe ({result -> onDataLoaded(result)}, { error -> error(error as Exception)})
-//        ListFolderTask(DropboxClientFactory.getClient(), this).execute(mPath)
     }
 
-    override fun onDataLoaded(result: ListFolderResult) {
+    fun onDataLoaded(result: ListFolderResult) {
         dialog.visibility = View.GONE
         (fileListRecyclerViewId.adapter as FilesAdapter).setFiles(result.entries)
     }
@@ -122,7 +121,7 @@ class FilesActivity : BaseActivity(), FilesAdapter.Callback, ListFolderTask.Call
      */
     private fun downloadFile() {
         mSelectedFile?.let {
-            DownloadFileObs(this, DropboxClientFactory.getClient())
+            DownloadFileObs(applicationContext, dbxClient)
                     .createFromParams(mSelectedFile)
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeOn(Schedulers.newThread())
@@ -130,21 +129,19 @@ class FilesActivity : BaseActivity(), FilesAdapter.Callback, ListFolderTask.Call
             return
         }
         Log.e(classLoader.toString(), "no selected file")
-//        DownloadFileTask(this@FilesActivity, DropboxClientFactory.getClient(), this).execute(mSelectedFile)
     }
     /**
      * upload file
      */
     private fun uploadFile(fileUri: String) {
-        UploadFileObs(this, DropboxClientFactory.getClient())
+        UploadFileObs(this, dbxClient)
                 .createFromUrl(fileUri, mPath)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(Schedulers.newThread())
                 .subscribe({ metadata -> onUploadComplete(metadata) }, { error -> onError(error as Exception) })
-//        UploadFileTask(this, DropboxClientFactory.getClient(), this).execute(fileUri)
     }
 
-    override fun onDownloadComplete(result: File?) {
+    fun onDownloadComplete(result: File?) {
         dialog.visibility = View.GONE
         result.let { viewFileInExternalApp(result) }
     }
@@ -152,7 +149,7 @@ class FilesActivity : BaseActivity(), FilesAdapter.Callback, ListFolderTask.Call
     /**
      * upload complete
      */
-    override fun onUploadComplete(result: FileMetadata) {
+    fun onUploadComplete(result: FileMetadata) {
         dialog.visibility = View.GONE
         //set message
         val message = result.name + " size " + result.size + " modified " +
@@ -166,7 +163,7 @@ class FilesActivity : BaseActivity(), FilesAdapter.Callback, ListFolderTask.Call
     /**
      * commont error handler
      */
-    override fun onError(e: Exception) {
+    fun onError(e: Exception) {
         dialog.visibility = View.GONE
 
         Log.e(TAG, "Failed to list folder.", e)

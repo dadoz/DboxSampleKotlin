@@ -1,4 +1,4 @@
-package com.dropbox.core.examples.android;
+package com.dropbox.core.examples.android.old;
 
 import android.content.Context;
 import android.content.Intent;

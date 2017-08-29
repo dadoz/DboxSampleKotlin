@@ -1,12 +1,12 @@
 package com.dropbox.core.examples.android
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import com.dropbox.core.android.Auth
 import com.dropbox.core.examples.android.internal.OpenWithActivity
+import com.dropbox.core.examples.android.old.GetCurrentAccountTask
 import com.dropbox.core.v2.users.FullAccount
 import kotlinx.android.synthetic.main.activity_user.*
 import kotlinx.android.synthetic.main.app_bar.*
@@ -44,7 +44,7 @@ class UserActivity : BaseActivity() {
      *
      */
     private fun updateUI() {
-        val hasToken = Utils.hasToken(this)
+        val hasToken = DropboxClientFactory.hasToken(this)
         login_button.visibility = if (hasToken) View.GONE else View.VISIBLE
         email_text.visibility = if (hasToken) View.VISIBLE else View.GONE
         name_text.visibility = if (hasToken) View.VISIBLE else View.GONE
@@ -54,7 +54,7 @@ class UserActivity : BaseActivity() {
     }
 
     override fun loadData() {
-        GetCurrentAccountTask(DropboxClientFactory.getClient(), object : GetCurrentAccountTask.Callback {
+        GetCurrentAccountTask(DropboxClientFactory.client, object : GetCurrentAccountTask.Callback {
             override fun onComplete(result: FullAccount) {
                 email_text.text = result.email
                 name_text.text = result.name.displayName

@@ -1,10 +1,11 @@
-package com.dropbox.core.examples.android;
+package com.dropbox.core.examples.android.old;
 
 import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
 
 import com.dropbox.core.DbxException;
+import com.dropbox.core.examples.android.UriHelpers;
 import com.dropbox.core.v2.DbxClientV2;
 import com.dropbox.core.v2.files.FileMetadata;
 import com.dropbox.core.v2.files.WriteMode;
@@ -50,7 +51,7 @@ class UploadFileTask extends AsyncTask<String, Void, FileMetadata> {
     @Override
     protected FileMetadata doInBackground(String... params) {
         String localUri = params[0];
-        File localFile = UriHelpers.getFileForUri(mContext, Uri.parse(localUri));
+        File localFile = UriHelpers.INSTANCE.getFileForUri(mContext, Uri.parse(localUri));
 
         if (localFile != null) {
             String remoteFolderPath = params[1];

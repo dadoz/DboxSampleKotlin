@@ -15,7 +15,7 @@ import java.io.IOException
 /**
  * Async task to upload a file to a directory
  */
-internal class UploadFileObs(private val mContext: Context, private val mDbxClient: DbxClientV2) {
+class UploadFileObs(private val mContext: Context, private val mDbxClient: DbxClientV2) {
 
     /**
      * get observable

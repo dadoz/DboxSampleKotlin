@@ -10,6 +10,24 @@ import com.dropbox.core.android.Auth
  * Will redirect to auth flow if needed
  */
 abstract class BaseActivity : AppCompatActivity() {
+    private val prefs by lazy {
+        getSharedPreferences("dropbox-sample", Context.MODE_PRIVATE)
+    }
+
+    private val storedUid by lazy {
+        prefs.getString("user-id", null)
+    }
+
+    protected val dbxClient by lazy {
+        DropboxClientFactory(accessToken).client
+    }
+
+    protected val picassoClient by lazy {
+        PicassoClient(applicationContext, dbxClient).client
+    }
+
+    private lateinit var accessToken: String
+    private val uid = Auth.getUid()
 
     override fun onResume() {
         super.onResume()
@@ -17,40 +35,25 @@ abstract class BaseActivity : AppCompatActivity() {
     }
 
     /**
-
      */
     private fun onResumeHandler() {
-        val prefs = getSharedPreferences("dropbox-sample", Context.MODE_PRIVATE)
-        var accessToken = prefs.getString("access-token", null)
-        if (accessToken == null) {
-            accessToken = Auth.getOAuth2Token()
-            if (accessToken != null) {
-                prefs.edit().putString("access-token", accessToken).apply()
-                initAndLoadData(accessToken)
-            }
-        } else {
-            initAndLoadData(accessToken)
+        accessToken.apply {
+            prefs.getString("access-token", null)?: Auth.getOAuth2Token()
         }
 
-        val uid = Auth.getUid()
-        val storedUid = prefs.getString("user-id", null)
-        if (uid != null && uid != storedUid) {
-            prefs.edit().putString("user-id", uid).apply()
+        accessToken.let {
+            prefs.edit().putString("access-token", accessToken).apply()
+            loadData()
+        }
+
+        uid?.let {
+            if (uid != storedUid)
+                prefs.edit().putString("user-id", uid).apply()
         }
     }
 
-    /**
-
-     * @param accessToken
-     */
-    private fun initAndLoadData(accessToken: String) {
-        DropboxClientFactory.init(accessToken)
-        PicassoClient.init(applicationContext, DropboxClientFactory.getClient())
-        loadData()
-    }
 
     /**
-
      */
     protected abstract fun loadData()
 }
