@@ -31,8 +31,8 @@ internal class DownloadFileObs(private val mContext: Context, private val mDbxCl
         return ObservableCreate(ObservableOnSubscribe { observableEmitter ->
             try {
                 val result = makeRequest(params)
-                result?.let{ observableEmitter.onError(Exception("emtpty file")); return@ObservableOnSubscribe}
-                observableEmitter.onNext(result!!)
+                result?.let{ observableEmitter.onNext(result); return@ObservableOnSubscribe }
+                observableEmitter.onError(Exception("emtpty file"))
             } catch (e: Exception) {
                 e.printStackTrace()
                 observableEmitter.onError(e)

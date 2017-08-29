@@ -27,7 +27,7 @@ class GetCurrentAccountObs(private val dbxClient: DbxClientV2) {
 
     @Synchronized
     @Throws(Exception::class)
-    fun makeRequest(): FullAccount = dbxClient.users().getCurrentAccount()
+    private fun makeRequest(): FullAccount = dbxClient.users().currentAccount
 
 }
 

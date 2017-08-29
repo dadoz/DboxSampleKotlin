@@ -25,8 +25,11 @@ class UploadFileObs(private val mContext: Context, private val mDbxClient: DbxCl
         return ObservableCreate(ObservableOnSubscribe { observableEmitter ->
             try {
                 val result = makeRequest(requestUrl)
-                result?.let { observableEmitter.onError(Throwable("empty")); return@ObservableOnSubscribe }
-                observableEmitter.onNext(result!!)
+                result?.let {
+                    observableEmitter.onNext(result)
+                    return@ObservableOnSubscribe
+                }
+                observableEmitter.onError(Throwable("empty file to be uploaded"))
             } catch (e: Exception) {
                 e.printStackTrace()
                 observableEmitter.onError(e)
@@ -45,15 +48,12 @@ class UploadFileObs(private val mContext: Context, private val mDbxClient: DbxCl
     @Throws(DbxException::class, IOException::class)
     private fun makeRequest(localUri: String): FileMetadata? {
         val localFile = UriHelpers.getFileForUri(mContext, Uri.parse(localUri))
-        if (localFile != null) {
+        localFile?.name?.let {
             // Note - this is not ensuring the name is a valid dropbox file name
-            val remoteFileName = localFile.name
-
-            val inputStream = FileInputStream(localFile)
-            return mDbxClient.files().uploadBuilder(localUri + "/" + remoteFileName)
+            return mDbxClient.files().uploadBuilder(localUri + "/" + localFile.name)
                     .withMode(WriteMode.OVERWRITE)
-                    .uploadAndFinish(inputStream)
+                    .uploadAndFinish(FileInputStream(localFile))
         }
-        return null
+        throw IOException("cannot create file")
     }
 }

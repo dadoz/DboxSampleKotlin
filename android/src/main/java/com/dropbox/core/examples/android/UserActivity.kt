@@ -2,12 +2,11 @@ package com.dropbox.core.examples.android
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import com.dropbox.core.android.Auth
 import com.dropbox.core.examples.android.internal.OpenWithActivity
-import com.dropbox.core.examples.android.old.GetCurrentAccountTask
-import com.dropbox.core.v2.users.FullAccount
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_user.*
 import kotlinx.android.synthetic.main.app_bar.*
 
@@ -54,17 +53,16 @@ class UserActivity : BaseActivity() {
     }
 
     override fun loadData() {
-        GetCurrentAccountTask(DropboxClientFactory.client, object : GetCurrentAccountTask.Callback {
-            override fun onComplete(result: FullAccount) {
-                email_text.text = result.email
-                name_text.text = result.name.displayName
-                type_text.text = result.accountType.name
-            }
-
-            override fun onError(e: Exception) {
-                Log.e(javaClass.name, "Failed to get account details.", e)
-            }
-        }).execute()
+        GetCurrentAccountObs(dbxClient)
+                .create()
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.newThread())
+                .subscribe({fullAccount -> with(fullAccount, {
+                                email_text.text = email
+                                name_text.text = name.displayName
+                                type_text.text = accountType.name
+                            })},
+                        { e -> e.printStackTrace()})
     }
 
 }

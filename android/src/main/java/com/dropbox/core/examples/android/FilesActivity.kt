@@ -38,7 +38,6 @@ class FilesActivity : BaseActivity(), FilesAdapter.Callback { //, ListFolderTask
     }
     private var mSelectedFile: FileMetadata? = null
 
-    //TODO take care of this can cause leak
     private val dialog: ProgressBar by lazy { ProgressBar(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -104,11 +103,11 @@ class FilesActivity : BaseActivity(), FilesAdapter.Callback { //, ListFolderTask
      * load data
      */
     override fun loadData() {
-        ListFolderObs(dbxClient)
+        val disposable = ListFolderObs(dbxClient)
                 .createByPath(mPath)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(Schedulers.newThread())
-                .subscribe ({result -> onDataLoaded(result)}, { error -> error(error as Exception)})
+                .subscribe ({result -> onDataLoaded(result)}, { error -> error(Exception(error.message))})
     }
 
     fun onDataLoaded(result: ListFolderResult) {
@@ -121,11 +120,11 @@ class FilesActivity : BaseActivity(), FilesAdapter.Callback { //, ListFolderTask
      */
     private fun downloadFile() {
         mSelectedFile?.let {
-            DownloadFileObs(applicationContext, dbxClient)
+            val disposable = DownloadFileObs(applicationContext, dbxClient)
                     .createFromParams(mSelectedFile)
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeOn(Schedulers.newThread())
-                    .subscribe({ file -> onDownloadComplete(file) }, {error -> onError(error as Exception) })
+                    .subscribe({ file -> onDownloadComplete(file) }, {error -> onError(Exception(error.message)) })
             return
         }
         Log.e(classLoader.toString(), "no selected file")
@@ -134,11 +133,11 @@ class FilesActivity : BaseActivity(), FilesAdapter.Callback { //, ListFolderTask
      * upload file
      */
     private fun uploadFile(fileUri: String) {
-        UploadFileObs(this, dbxClient)
+        var disposable = UploadFileObs(this, dbxClient)
                 .createFromUrl(fileUri, mPath)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(Schedulers.newThread())
-                .subscribe({ metadata -> onUploadComplete(metadata) }, { error -> onError(error as Exception) })
+                .subscribe({ metadata -> onUploadComplete(metadata) }, { error -> onError(Exception(error.message)) })
     }
 
     fun onDownloadComplete(result: File?) {

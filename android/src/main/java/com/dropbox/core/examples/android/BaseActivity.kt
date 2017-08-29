@@ -26,7 +26,9 @@ abstract class BaseActivity : AppCompatActivity() {
         PicassoClient(applicationContext, dbxClient).client
     }
 
-    private lateinit var accessToken: String
+    private val accessToken: String by lazy {
+        prefs.getString("access-token", null)?: Auth.getOAuth2Token()
+    }
     private val uid = Auth.getUid()
 
     override fun onResume() {
@@ -37,14 +39,8 @@ abstract class BaseActivity : AppCompatActivity() {
     /**
      */
     private fun onResumeHandler() {
-        accessToken.apply {
-            prefs.getString("access-token", null)?: Auth.getOAuth2Token()
-        }
-
-        accessToken.let {
-            prefs.edit().putString("access-token", accessToken).apply()
-            loadData()
-        }
+        prefs.getString("access-token", null)?: prefs.edit().putString("access-token", accessToken).apply()
+        loadData()
 
         uid?.let {
             if (uid != storedUid)
