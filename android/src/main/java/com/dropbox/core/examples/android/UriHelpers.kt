@@ -7,7 +7,6 @@ import android.net.Uri
 import android.os.Environment
 import android.provider.DocumentsContract
 import android.provider.MediaStore
-
 import java.io.File
 
 /**
@@ -24,60 +23,73 @@ object UriHelpers {
      * @param uri The uri of the saved file
      * @return The file with path pointing to the saved file. It can return null if we can't resolve the uri properly.
      */
-    fun getFileForUri(context: Context, uri: Uri): File? {
-        var path: String? = null
-        // DocumentProvider
-        if (DocumentsContract.isDocumentUri(context, uri)) {
-            // ExternalStorageProvider
-            if (isExternalStorageDocument(uri)) {
-                val docId = DocumentsContract.getDocumentId(uri)
-                val split = docId.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-                val type = split[0]
-
-                if ("primary".equals(type, ignoreCase = true)) {
-                    path = Environment.getExternalStorageDirectory().toString() + "/" + split[1]
-                }
-            } else if (isDownloadsDocument(uri)) {
-                // DownloadsProvider
-                val id = DocumentsContract.getDocumentId(uri)
-                val contentUri = ContentUris
-                        .withAppendedId(Uri.parse("content://downloads/public_downloads"), java.lang.Long.valueOf(id)!!)
-
-                path = getDataColumn(context, contentUri, null, null)
-            } else if (isMediaDocument(uri)) {
-                // MediaProvider
-                val docId = DocumentsContract.getDocumentId(uri)
-                val split = docId.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-                val type = split[0]
-
-                var contentUri: Uri? = null
-                if ("image" == type) {
-                    contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-                } else if ("video" == type) {
-                    contentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI
-                } else if ("audio" == type) {
-                    contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-                }
-
-                val selection = "_id=?"
-                val selectionArgs = arrayOf(split[1])
-
-                path = getDataColumn(context, contentUri, selection, selectionArgs)
-            }
-        } else if ("content".equals(uri.scheme, ignoreCase = true)) {
-            // MediaStore (and general)
-            path = getDataColumn(context, uri, null, null)
-        } else if ("file".equals(uri.scheme, ignoreCase = true)) {
-            // File
-            path = uri.path
+    @Throws(Exception::class)
+    fun getFileForUri(context: Context, uri: Uri): File? = when {
+        DocumentsContract.isDocumentUri(context, uri) -> when {
+            isExternalStorageDocument(uri) -> File(getExternalStorageDocument(uri))
+            isDownloadsDocument(uri) -> File(getDownloadsDocument(uri, context))
+            isMediaDocument(uri) -> File(getMediaDocument(uri, context))
+            else -> null
         }
-
-        return if (path != null) File(path) else path
+        ("content".equals(uri.scheme, ignoreCase = true)) -> File(getDataColumn(context, uri, null, null))
+        ("file".equals(uri.scheme, ignoreCase = true)) -> File(uri.path)
+        else -> null
     }
 
+    /**
+     * get media docs
+     */
+    @Throws(Exception::class)
+    private fun getMediaDocument(uri: Uri, context: Context): String? {
+        // MediaProvider
+        val docId = DocumentsContract.getDocumentId(uri)
+        val split = docId.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+        val type = split[0]
+
+        val contentUri = when(type) {
+            "image" -> MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+            "video" -> MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+            "audio" -> MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
+            else -> null
+        }
+        val selection = "_id=?"
+        val selectionArgs = arrayOf(split[1])
+        return getDataColumn(context, contentUri, selection, selectionArgs)
+    }
+
+    /**
+     * get downloads docs
+     */
+    @Throws(Exception::class)
+    private fun getDownloadsDocument(uri: Uri, context: Context): String? {
+        // DownloadsProvider
+        val id = DocumentsContract.getDocumentId(uri)
+        val contentUri = ContentUris
+                .withAppendedId(Uri.parse("content://downloads/public_downloads"), java.lang.Long.valueOf(id)!!)
+
+        return getDataColumn(context, contentUri, null, null)
+    }
+
+    /**
+     * get external storage
+     */
+    @Throws(Exception::class)
+    private fun getExternalStorageDocument(uri: Uri): String? {
+        val docId = DocumentsContract.getDocumentId(uri)
+        val split = docId.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+        val type = split[0]
+
+        if ("primary".equals(type, ignoreCase = true)) {
+            return Environment.getExternalStorageDirectory().toString() + "/" + split[1]
+        }
+        return null
+    }
+
+    /**
+     *
+     */
     private fun getDataColumn(context: Context, uri: Uri?, selection: String?,
                               selectionArgs: Array<String>?): String? {
-
         var cursor: Cursor? = null
         val column = "_data"
         val projection = arrayOf(column)
@@ -96,16 +108,9 @@ object UriHelpers {
         return null
     }
 
+    private fun isExternalStorageDocument(uri: Uri): Boolean = "com.android.externalstorage.documents" == uri.authority
 
-    private fun isExternalStorageDocument(uri: Uri): Boolean {
-        return "com.android.externalstorage.documents" == uri.authority
-    }
+    private fun isDownloadsDocument(uri: Uri): Boolean = "com.android.providers.downloads.documents" == uri.authority
 
-    private fun isDownloadsDocument(uri: Uri): Boolean {
-        return "com.android.providers.downloads.documents" == uri.authority
-    }
-
-    private fun isMediaDocument(uri: Uri): Boolean {
-        return "com.android.providers.media.documents" == uri.authority
-    }
+    private fun isMediaDocument(uri: Uri): Boolean = "com.android.providers.media.documents" == uri.authority
 }
