@@ -1,63 +1,32 @@
-allprojects  {
-    apply plugin: 'maven'
-    group = 'com.dropbox.core'
-    version = '0-SNAPSHOT'
+buildscript {
+    ext.kotlin_version = '1.1.4-3'
+    ext {
+        kotlin_version = '1.1.4-3'
+        appcompat_version = "26.0.1"
+        dropbox_version = "3.0.3"
+        anko_version = "0.10.0"
+        rxandroid_version = "2.0.1"
+        rxjava_version = "2.1.2"
+        easyperms_version = "0.4.3"
+    }
+    repositories {
+        jcenter()
+        maven {
+            url "https://maven.google.com"
+        }
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.3.3'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
 }
 
-subprojects {
-    apply plugin: 'java'
-
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
-
+allprojects {
     repositories {
         jcenter()
         mavenLocal()
-        mavenCentral()
-
-        // Release Staging Testing
-        // maven { url "..." }
-    }
-
-    dependencies {
-        compile group: 'com.dropbox.core', name: 'dropbox-core-sdk', version: '0-SNAPSHOT', changing: true
-    }
-
-    compileJava {
-        options.compilerArgs << '-Xlint:all'
-        options.warnings = true
-        options.deprecation = true
-        options.encoding = 'utf-8'
-    }
-
-    // allow subprojects to run with arbitrary number of arguments specified through project properties:
-    //
-    //   -Parg0=... -Parg1=... -Parg2=...
-    //
-    // This is intended to be used by the ./run script and not through gradle directly
-    task run(type: JavaExec) {
-        standardInput = System.in
-        classpath = sourceSets.main.runtimeClasspath
-        main = "com.dropbox.core.examples.${project.name.replace('-','_')}.Main"
-
-        // convenience for not having to always specify the auth file
-        def useAuthInfoFileProp = project.properties.get('useAuthInfoFileProp', 'false') == 'true'
-        if (useAuthInfoFileProp && project.hasProperty('com.dropbox.test.authInfoFile')) {
-            args project.property('com.dropbox.test.authInfoFile')
-        }
-
-        def failOnError = project.properties.get('failOnError', 'false') == 'true'
-        ignoreExitValue !failOnError
-
-        def argi = 0
-        while (true) {
-            def prop = "arg${argi}"
-            if (project.hasProperty(prop)) {
-                args project.property(prop)
-            } else {
-                break
-            }
-            ++argi
+        maven {
+            url "https://maven.google.com"
         }
     }
 }
