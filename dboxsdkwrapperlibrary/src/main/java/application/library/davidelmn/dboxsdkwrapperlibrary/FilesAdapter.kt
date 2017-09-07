@@ -1,4 +1,4 @@
-package com.dropbox.core.examples.android
+package application.library.davidelmn.dboxsdkwrapperlibrary
 
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
@@ -78,7 +78,7 @@ class FilesAdapter(private val mPicasso: Picasso, private val mCallback: Callbac
 
             if (item is FileMetadata) {
                 val mime = MimeTypeMap.getSingleton()
-                val ext = item.getName().substring(item.getName().indexOf(".") + 1)
+                val ext = item.getName().substring(item.getName().indexOf("") + 1)
                 val type = mime.getMimeTypeFromExtension(ext)
                 if (type != null && type.startsWith("image/")) {
                     mPicasso.load(FileThumbnailRequestHandler.buildPicassoUri(item))

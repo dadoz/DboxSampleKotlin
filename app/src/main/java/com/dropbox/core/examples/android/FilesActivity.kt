@@ -30,25 +30,25 @@ import java.util.*
  * Activity that displays the content of a path in dropbox and lets users navigate folders,
  * and upload/download files
  */
-class FilesActivity : BaseActivity(), FilesAdapter.Callback , EasyPermissions.PermissionCallbacks { //, ListFolderTask.Callback, DownloadFileTask.Callback, UploadFileTask.Callback {
+class FilesActivity : BaseActivity(), EasyPermissions.PermissionCallbacks { //FilesAdapter.Callback , //, ListFolderTask.Callback, DownloadFileTask.Callback, UploadFileTask.Callback {
     private val perms: Array<String> = arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE)
-
-    private val mPath: String by lazy {
-        intent.getStringExtra(EXTRA_PATH) ?: ""
-    }
+    private val mPath: String by lazy { intent.getStringExtra(EXTRA_PATH) ?: "" }
     private var mSelectedFile: FileMetadata? = null
-
     private val dialog: ProgressBar by lazy { ProgressBar(this) }
-
     private val compositeDisposable: CompositeDisposable = CompositeDisposable()
 
-
+    /**
+     * on create view
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_files)
         onInitView()
     }
 
+    /**
+     * on stop handler
+     */
     override fun onStop() {
         super.onStop()
         compositeDisposable.dispose()

@@ -1,7 +1,8 @@
-package com.dropbox.core.examples.android
+package application.library.davidelmn.dboxsdkwrapperlibrary.observable
 
 import android.content.Context
 import android.net.Uri
+import application.library.davidelmn.dboxsdkwrapperlibrary.UriHelpers
 import com.dropbox.core.DbxException
 import com.dropbox.core.v2.DbxClientV2
 import com.dropbox.core.v2.files.FileMetadata

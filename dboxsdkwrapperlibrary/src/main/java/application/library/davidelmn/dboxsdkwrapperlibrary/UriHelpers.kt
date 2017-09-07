@@ -1,4 +1,4 @@
-package com.dropbox.core.examples.android
+package application.library.davidelmn.dboxsdkwrapperlibrary
 
 import android.content.ContentUris
 import android.content.Context

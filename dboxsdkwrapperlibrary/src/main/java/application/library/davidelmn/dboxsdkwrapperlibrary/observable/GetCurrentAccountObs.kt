@@ -1,22 +1,23 @@
-package com.dropbox.core.examples.android
+package application.library.davidelmn.dboxsdkwrapperlibrary.observable
 
 import com.dropbox.core.v2.DbxClientV2
-import com.dropbox.core.v2.files.ListFolderResult
+import com.dropbox.core.v2.users.FullAccount
 import io.reactivex.Observable
 import io.reactivex.ObservableOnSubscribe
 import io.reactivex.internal.operators.observable.ObservableCreate
 
 /**
- * Created by davide-syn on 8/28/17.
+ * Created by davide-syn on 8/29/17.
  */
-class ListFolderObs(private val client: DbxClientV2) {
+
+class GetCurrentAccountObs(private val dbxClient: DbxClientV2) {
     /**
-     * create by path
+     * create by client
      */
-    fun createByPath(path: String) : Observable<ListFolderResult> {
+    fun create() : Observable<FullAccount> {
         return ObservableCreate(ObservableOnSubscribe { observableEmitter ->
             try {
-                val result = makeRequest(path)
+                val result = makeRequest()
                 observableEmitter.onNext(result)
             } catch (e: Exception) {
                 observableEmitter.onError(e)
@@ -26,6 +27,7 @@ class ListFolderObs(private val client: DbxClientV2) {
 
     @Synchronized
     @Throws(Exception::class)
-    fun makeRequest(path: String): ListFolderResult = client.files().listFolder(path)
+    private fun makeRequest(): FullAccount = dbxClient.users().currentAccount
 
 }
+

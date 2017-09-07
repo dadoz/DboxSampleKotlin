@@ -1,4 +1,4 @@
-package com.dropbox.core.examples.android
+package application.library.davidelmn.dboxsdkwrapperlibrary.observable
 
 import android.content.Context
 import android.content.Intent
