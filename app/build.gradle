@@ -41,7 +41,7 @@ android {
 }
 
 dependencies {
-    compile "com.dropbox.core:dropbox-core-sdk:$dropbox_version"
+    compile project(":dboxsdkwrapperlibrary")
     compile "com.android.support:support-compat:$appcompat_version"
     compile "com.android.support:appcompat-v7:$appcompat_version"
     compile "com.android.support:design:$appcompat_version"

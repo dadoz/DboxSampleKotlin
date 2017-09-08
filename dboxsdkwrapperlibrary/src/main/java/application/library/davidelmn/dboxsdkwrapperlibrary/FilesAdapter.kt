@@ -24,7 +24,7 @@ class FilesAdapter(private val mPicasso: Picasso, private val mCallback: Callbac
         notifyDataSetChanged()
     }
 
-    interface Callback {
+    open interface Callback {
         fun onFolderClicked(folder: FolderMetadata)
         fun onFileClicked(file: FileMetadata)
     }

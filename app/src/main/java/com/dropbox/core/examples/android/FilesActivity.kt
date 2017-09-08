@@ -15,7 +15,6 @@ import android.widget.ProgressBar
 import com.dropbox.core.v2.files.FileMetadata
 import com.dropbox.core.v2.files.FolderMetadata
 import com.dropbox.core.v2.files.ListFolderResult
-import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_files.*
@@ -24,6 +23,7 @@ import pub.devrel.easypermissions.EasyPermissions
 import java.io.File
 import java.text.DateFormat
 import java.util.*
+import application.library.davidelmn.dboxsdkwrapperlibrary.*
 
 
 /**
@@ -33,7 +33,7 @@ import java.util.*
 class FilesActivity : BaseActivity(), EasyPermissions.PermissionCallbacks { //FilesAdapter.Callback , //, ListFolderTask.Callback, DownloadFileTask.Callback, UploadFileTask.Callback {
     private val perms: Array<String> = arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE)
     private val mPath: String by lazy { intent.getStringExtra(EXTRA_PATH) ?: "" }
-    private var mSelectedFile: FileMetadata? = null
+//    private var mSelectedFile: FileMetadata? = null
     private val dialog: ProgressBar by lazy { ProgressBar(this) }
     private val compositeDisposable: CompositeDisposable = CompositeDisposable()
 
@@ -79,16 +79,15 @@ class FilesActivity : BaseActivity(), EasyPermissions.PermissionCallbacks { //Fi
 
         //set rv
         fileListRecyclerViewId.layoutManager = LinearLayoutManager(this)
-        fileListRecyclerViewId.adapter = FilesAdapter(picassoClient, this)
+        fileListRecyclerViewId.adapter = Dbox.buildAdapter()
+//        fileListRecyclerViewId.adapter = FilesAdapter(picassoClient, this)
     }
 
-    override fun onFolderClicked(folder: FolderMetadata) {
+    fun onFolderClicked(folder: FolderMetadata) {
         startActivity(FilesActivity.getIntent(this@FilesActivity, folder.pathLower))
     }
 
-    override fun onFileClicked(file: FileMetadata) {
-        ///TODO whatthehell is this?? never use callbacks
-        mSelectedFile = file
+    fun onFileClicked(file: FileMetadata) {
         performWithPermissions(DOWNLOAD_FILE)
     }
 
@@ -100,50 +99,9 @@ class FilesActivity : BaseActivity(), EasyPermissions.PermissionCallbacks { //Fi
         startActivityForResult(intent, PICKFILE_REQUEST_CODE)
     }
 
-    /**
-     * load data
-     */
-    override fun loadData() {
-        val disposable = ListFolderObs(dbxClient)
-                .createByPath(mPath)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeOn(Schedulers.newThread())
-                .subscribe ({result -> onDataLoaded(result)}, { error -> error(Exception(error.message))})
-        compositeDisposable.add(disposable)
-    }
-
     fun onDataLoaded(result: ListFolderResult) {
         dialog.visibility = View.GONE
         (fileListRecyclerViewId.adapter as FilesAdapter).setFiles(result.entries)
-    }
-
-    /**
-     * download file
-     */
-    private fun downloadFile() {
-        mSelectedFile?.let {
-            val disposable = DownloadFileObs(applicationContext, dbxClient)
-                    .createFromParams(mSelectedFile)
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribeOn(Schedulers.newThread())
-                    .subscribe({ file -> onDownloadComplete(file) }, {error -> onError(Exception(error.message)) })
-            compositeDisposable.add(disposable)
-            return
-        }
-
-        //show error
-        onError(Exception("empty file selected"))
-    }
-    /**
-     * upload file
-     */
-    private fun uploadFile(fileUri: String) {
-        val disposable = UploadFileObs(this, dbxClient)
-                .createFromUrl(fileUri, mPath)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeOn(Schedulers.newThread())
-                .subscribe({ metadata -> onUploadComplete(metadata) }, { error -> onError(Exception(error.message)) })
-        compositeDisposable.add(disposable)
     }
 
     fun onDownloadComplete(result: File?) {
